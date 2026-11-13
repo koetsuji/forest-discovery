@@ -12,6 +12,8 @@ Owner decision: everything that stands in the world is an AI generated sprite, f
 - **Ground** is drawn by code in colours sampled from the sprites, because an endless world needs ground with no seams. Small ground details (tufts, flowers, mushrooms) are sprites.
 - **Interface icons** are SVG, drawn by Claude.
 - **Stand-ins.** Until a sprite exists, the game shows a flat grey silhouette of the right size. A stand-in is never styled to look final.
+  - As built there are two. The art pipeline draws a grey stand-in for every sprite that has settings in `art/config/` but no PNG in `art/source/` (`tools/standins.py`). These are built from clumps in four flat greys, so the split and the wind can be judged before the art exists. They go through the same pipeline as real sprites and are marked `standin` in the atlas.
+  - If the atlas itself is missing a sprite or fails to load, the game draws a one-colour silhouette from the size in the kind.
 
 ## Credits and cost
 
@@ -110,6 +112,16 @@ Dev tools in `tools/`, written in Python (numpy, scipy, scikit-image, Pillow). T
 4. **Contact sheet.** One preview image per plant: the original next to a copy with every clump in a different flat colour. Claude looks at every sheet before a sprite is accepted.
 
 Per-sprite settings live in `art/config/`: minimum distance between clump seeds, minimum clump size, how much of the height counts as trunk, and the wind profile. Bushes have no trunk and use smaller clumps. Pines are split into branch tiers.
+
+As built:
+
+- Run it with `python3 tools/art_pipeline.py`. It rebuilds `assets/atlas.png`, `assets/atlas.json` and one contact sheet per plant in `art/sheets/`. A sprite that breaks a rule stops the run with the reason.
+- One file per sprite in `art/config/`, named like the sprite: `oak-01.json`. Keys: `profile` (oak, birch, pine, bush), `split` (`clumps` or `tiers`), `min_dist`, `min_size`, `trunk_part`, `leaf_cut`, and `tiers` for a pine. A file with no `split` is a thing the wind does not move, such as a rock.
+- To bring in a real sprite: put `oak-01.png` in `art/source/`, run the pipeline, look at `art/sheets/oak-01.png`. Nothing else changes. The stand-in for that sprite is gone from the atlas.
+- Wood is found by colour as in the article: hue 5 to 40 degrees, saturation above 0.22, brightness under 125. Pale bark is saturation under 0.16 and brightness over 95.
+- A pine's tiers are found from the rows where the needles are suddenly narrower. Each cut then follows the dark underside of the skirt above it, column by column, so a tier keeps its drooping edge.
+- The atlas is saved with a colour table. Five stand-ins take 10 KB.
+- The shared palette is written into the atlas JSON. The game moves each ground colour to the nearest palette colour when it loads (`src/render/palette.js`). With no accepted sprite the palette is empty and the provisional ground colours in `src/tuning.js` are used.
 
 A good split: 10 to 20 clumps on an oak, each one a shape a person would also circle, no clump made of trunk, no stray pixels.
 

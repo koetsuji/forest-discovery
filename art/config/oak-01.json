@@ -1,0 +1,1 @@
+{ "profile": "oak", "split": "clumps", "min_dist": 5, "min_size": 25, "trunk_part": 0.4, "leaf_cut": 0.78 }
