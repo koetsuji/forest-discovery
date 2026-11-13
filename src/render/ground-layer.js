@@ -68,6 +68,12 @@ export function createGroundLayer(seed, scene) {
      */
     pose(t, view) {
       lit.length = 0;
+      if (!colours) return;
+      // Chunks are painted here if the first pose comes before the first frame.
+      const range = chunksIn(view);
+      for (let cy = range.cy0; cy <= range.cy1; cy++) {
+        for (let cx = range.cx0; cx <= range.cx1; cx++) cache.ensure(cx, cy);
+      }
       for (const chunk of this.chunksUnder(view)) {
         const s = chunk.streaks;
         for (let i = 0; i < s.length; i += 3) {

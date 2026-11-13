@@ -31,6 +31,7 @@ Found and fixed on the way:
 
 - Chrome sometimes sends `transitionend` early. The title vanished at once in about one run in five. Leaving things are now removed on a timer.
 - On touch, sound and vibration were started on finger down, which browsers refuse with a console warning. Sound now starts on the first gesture the browser accepts.
+- Fixed-clock frames were not repeatable at first: which way up a leaf was, and which grass was lit, depended on how long the page took to load. Both now depend only on the simulation clock, and the check compares two loads pixel for pixel.
 
 Open:
 

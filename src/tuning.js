@@ -56,7 +56,7 @@ export const tuning = {
     /** Half width of the trail. */
     trailHalfWidthPx: 8,
     /** Gust-lit grass streaks per chunk, before the open ground test. */
-    streaksPerChunk: 260,
+    streaksPerChunk: 380,
     /** A streak lights up when the gust over it passes this level. */
     streakGustLevel: 0.28,
   },
