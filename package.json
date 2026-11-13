@@ -1,0 +1,11 @@
+{
+  "name": "forest-discovery",
+  "private": true,
+  "type": "module",
+  "description": "A small browser game about wandering through an old forest that feels alive.",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "test": "node --test",
+    "check": "node tools/check.mjs"
+  }
+}

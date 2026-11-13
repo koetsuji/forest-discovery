@@ -43,11 +43,13 @@ Why no engine: the game needs a camera, sprites and sound, and the browser alrea
     assets/               game-ready atlases and JSON (built, committed)
     art/source/           sprites exactly as generated (inputs)
     art/config/           per-sprite pipeline settings
-    tools/                art pipeline, size report, screenshot script
+    tools/                art pipeline, size report, screenshot script, local server
     tests/                node --test files
     docs/                 these documents, decisions.md, devlog.md
     CLAUDE.md             working rules for Claude sessions
     README.md             what it is, play link, credits
+    package.json          marks the code as ES modules for Node. No dependencies
+    jsconfig.json         lets an editor or tsc check the JSDoc types
     .nojekyll
 
 ## Frame
@@ -146,8 +148,10 @@ Devices are translated into intents (`move(x, y)`, `interact`, `pause`). The gam
 
 ## Checks before every push
 
+`node tools/check.mjs` runs all four.
+
 1. `node --test` passes: rng and world determinism, wind math, save migration.
-2. A local static server plus headless Chrome loads the game with a fixed seed and clock, takes screenshots at several moments, and the session looks at them.
+2. A local static server plus headless Chrome loads the game with a fixed seed and clock, takes screenshots at several moments, and the session looks at them. The page takes `?seed=7&t=12.5&freeze=1&title=0` for this.
 3. The browser console is clean.
 4. The size report is inside the budgets.
 

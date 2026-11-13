@@ -6,7 +6,7 @@ Claude updates this file at the end of every session.
 
 | | Milestone | Status |
 |---|---|---|
-| M0 | Skeleton | todo |
+| M0 | Skeleton | built, live check pending |
 | M1 | Living forest | todo |
 | M2 | The wanderer | todo |
 | M3 | Endless forest | todo |

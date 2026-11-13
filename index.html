@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Forest Discovery</title>
+  <meta name="description" content="A small browser game about wandering through an old forest that feels alive.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%230a0a0a'/%3E%3Cpath fill='%2386a043' d='M5 2h6v2h2v5h-2v2H5V9H3V4h2z'/%3E%3Cpath fill='%23a48a5a' d='M7 10h2v4H7z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/ui.css">
+  <link rel="preload" href="styles/fonts/geist-pixel-square.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Every module the game imports, so the browser fetches them in one round. tools/sync-preloads.mjs writes this list. -->
+  <!-- modulepreload:start -->
+  <link rel="modulepreload" href="src/audio/engine.js">
+  <link rel="modulepreload" href="src/audio/sfx.js">
+  <link rel="modulepreload" href="src/core/assets.js">
+  <link rel="modulepreload" href="src/core/camera.js">
+  <link rel="modulepreload" href="src/core/events.js">
+  <link rel="modulepreload" href="src/core/input.js">
+  <link rel="modulepreload" href="src/core/loop.js">
+  <link rel="modulepreload" href="src/core/rng.js">
+  <link rel="modulepreload" href="src/core/save.js">
+  <link rel="modulepreload" href="src/render/ground-layer.js">
+  <link rel="modulepreload" href="src/render/layers.js">
+  <link rel="modulepreload" href="src/render/renderer.js">
+  <link rel="modulepreload" href="src/render/sprites.js">
+  <link rel="modulepreload" href="src/render/standing-layer.js">
+  <link rel="modulepreload" href="src/tuning.js">
+  <link rel="modulepreload" href="src/ui/feel.js">
+  <link rel="modulepreload" href="src/ui/strings.js">
+  <link rel="modulepreload" href="src/ui/title.js">
+  <link rel="modulepreload" href="src/world/chunks.js">
+  <link rel="modulepreload" href="src/world/clearing.js">
+  <link rel="modulepreload" href="src/world/ground.js">
+  <link rel="modulepreload" href="src/world/kinds/birch.js">
+  <link rel="modulepreload" href="src/world/kinds/bush.js">
+  <link rel="modulepreload" href="src/world/kinds/index.js">
+  <link rel="modulepreload" href="src/world/kinds/oak.js">
+  <link rel="modulepreload" href="src/world/kinds/pine.js">
+  <link rel="modulepreload" href="src/world/kinds/rock.js">
+  <link rel="modulepreload" href="src/world/world.js">
+  <!-- modulepreload:end -->
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <canvas id="view" aria-label="A forest clearing, seen from above. The trees move in the wind."></canvas>
+  <div id="ui"></div>
+  <noscript><div class="noscript">Forest Discovery needs JavaScript to run.</div></noscript>
+</body>
+</html>

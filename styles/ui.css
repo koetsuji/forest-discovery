@@ -1,0 +1,264 @@
+/* The shell: a quiet interface floating over the forest. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #10231d;
+  color: var(--ds-gray-1000);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#view {
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: block;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#ui > * {
+  pointer-events: auto;
+}
+
+.noscript {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  text-align: center;
+  background: var(--ds-background-100);
+}
+
+/* Buttons. Every state from docs/sound-and-feel.md lives here. */
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--ds-gray-alpha-400);
+  border-radius: var(--radius-sm);
+  background: var(--ds-background-100);
+  color: var(--ds-gray-1000);
+  font: 500 14px/20px var(--font-sans);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  transition:
+    transform var(--t-instant) var(--ease-out),
+    border-color var(--t-instant) linear,
+    background-color var(--t-instant) linear,
+    color var(--t-quick) linear;
+}
+
+.btn--lg {
+  height: 48px;
+  min-width: 132px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.btn--icon {
+  width: 40px;
+  padding: 0;
+}
+
+.btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn--icon {
+    min-width: 44px;
+  }
+}
+
+/* Hover only where a pointer can hover. The class is set by ui/feel.js. */
+.btn.is-hover {
+  border-color: var(--ds-gray-alpha-600);
+  background: var(--ds-gray-100);
+}
+
+.btn.is-pressed {
+  transform: translateY(1px) scale(0.98);
+  border-color: var(--ds-gray-alpha-200);
+  background: var(--ds-background-200);
+}
+
+.btn.is-released {
+  animation: btn-release var(--t-quick) var(--ease-out);
+}
+
+.btn:focus-visible {
+  box-shadow: var(--ds-focus-ring);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  border-color: var(--ds-gray-alpha-200);
+  background: var(--ds-background-100);
+  color: var(--ds-gray-700);
+  cursor: default;
+}
+
+/* One small overshoot, then rest. */
+@keyframes btn-release {
+  0% {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  55% {
+    transform: translateY(-0.5px) scale(1.012);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+/* Title screen */
+
+.title {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  padding-bottom: calc(var(--space-6) + 6vh);
+}
+
+.title__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 46%, rgba(10, 10, 10, 0.62), rgba(10, 10, 10, 0.4) 70%, rgba(10, 10, 10, 0.5));
+  opacity: 1;
+  transition: opacity var(--t-slow) linear;
+}
+
+.title__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-10);
+  opacity: 1;
+  transition:
+    opacity var(--t-calm) var(--ease-out),
+    transform var(--t-calm) var(--ease-out);
+}
+
+.title__name {
+  --cells: 2;
+  margin: 0;
+  max-width: 11em;
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  /* A whole number of screen pixels per font grid cell keeps the pixels square. */
+  font-size: calc(var(--cells) * 1px / var(--pixel-cell));
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ds-gray-1000);
+}
+
+@media (min-width: 720px) and (min-height: 520px) {
+  .title__name {
+    --cells: 3;
+    max-width: none;
+  }
+}
+
+/* Entering: fade up from 8 px below. */
+.title.is-entering .title__body {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Leaving: faster than entering, and the forest comes up slowly behind. */
+.title.is-leaving {
+  pointer-events: none;
+}
+
+.title.is-leaving .title__body {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--t-quick) var(--ease-in),
+    transform var(--t-quick) var(--ease-in);
+}
+
+.title.is-leaving .title__scrim {
+  opacity: 0;
+}
+
+/* Reduced motion: fades only, nothing moves. The wind stays. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn.is-pressed {
+    transform: none;
+  }
+
+  .btn.is-released {
+    animation: none;
+  }
+
+  .title.is-entering .title__body,
+  .title.is-leaving .title__body {
+    transform: none;
+  }
+}
+
+.reduced-motion .btn,
+.reduced-motion .btn.is-pressed {
+  transform: none;
+}
+
+.reduced-motion .btn.is-released {
+  animation: none;
+}
+
+.reduced-motion .title.is-entering .title__body,
+.reduced-motion .title.is-leaving .title__body {
+  transform: none;
+}

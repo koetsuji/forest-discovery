@@ -46,3 +46,19 @@ Not urgent: the final name, a license for the repo.
 | Topic | Call | Why |
 |---|---|---|
 | Source of truth | The six knowledge files were copied into docs/ unchanged. From here on docs/ is the current copy | Project instructions: once docs/ exists, it wins |
+| Pages | Turned on for `main`, root folder, through the owner's browser session | The owner asked for it. The session's own GitHub access is not allowed to change Pages settings |
+| package.json | Added, with `"type": "module"`, three script names and no dependencies | Node's test runner must load the game's ES modules. Nothing is installed and nothing is built |
+| Checks | `node tools/check.mjs` runs tests, the game in headless Chrome, the console check and the size report. The browser is driven over the DevTools protocol with plain Node | The four checks in architecture.md, with no dependency |
+| Clock for checks | The page takes `?seed=`, `?t=`, `?freeze=1` and `?title=0` | A fixed seed and clock make screenshots repeatable |
+| Seed until M3 | One fixed default seed. `?seed=` overrides it | The clearing is laid out by hand for now. A random seed per visit arrives with the endless world |
+| First scene | A hand placed ring of trees around a meadow, with seeded forest around it, built from kinds, stable ids and pure functions of position | It is the M1 clearing already, so M0 work is not thrown away. M3 replaces the hand layout with placers |
+| Flat stand-ins | One flat grey per kind with a darker outline, drawn by code from the size in the kind | A stand-in must look like a stand-in. One grey for everything turned overlapping trees into a single blob |
+| Buttons | One button style for the game: near-black panel, hairline border, Geist large size | The shell stays quiet so the forest carries the colour. The border is what brightens on hover and darkens on press |
+| Title contrast | A dark scrim over the forest while the title is up, lifted slowly on Begin | White text on bright grass fails WCAG AA without it |
+| Title type | Geist Pixel Square, sized so one font grid cell is 2 or 3 whole screen pixels | Keeps the pixels of the name square |
+| Fonts | Geist Sans, Mono and Pixel Square, cut to printable ASCII: 39 KB together. `tools/build-fonts.sh` rebuilds them | Inside the 60 KB budget. ASCII covers seeds, counts and landmark names |
+| First press | Sound starts on the first gesture the browser accepts: at once with a mouse or a key, on lifting the finger on touch. Vibration starts with the second touch | Browsers refuse both before that and log a warning. The console has to stay clean |
+| Assistive clicks | A click that arrives with no press before it runs the whole press and release at once | Screen readers and switch devices send only a click |
+| Interface timing | Things that leave are removed on a timer that matches their fade, never on `transitionend` or `animationend` | Chrome can send those events early. The check caught the title vanishing at once in about one run in five |
+| Module preloads | index.html lists every module the game imports. `tools/sync-preloads.mjs` writes the list and a test guards it | Without it the browser discovers imports one level at a time, which costs round trips on a phone |
+| Ground texture | Two streak fields, long bands and short dashes, with each row slid sideways a little | Gives the ragged horizontal dashes of hand placed pixel art, with no seams |
