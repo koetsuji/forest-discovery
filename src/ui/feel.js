@@ -17,7 +17,8 @@ const RELEASE_SPRING_MS = 200;
 
 /**
  * @param {HTMLButtonElement} el
- * @param {{ bus: import('../core/events.js').Bus, id: string, tone?: 'confirm' | 'back', onRelease: () => void }} opts
+ * @param {{ bus: import('../core/events.js').Bus, id: string, tone?: 'confirm' | 'back' | 'toggle', onRelease: () => void }} opts
+ *   tone picks the release sound. A toggle stays quiet on release: its switch answers with its own note.
  */
 export function attachButton(el, { bus, id, tone = 'confirm', onRelease }) {
   let held = false;

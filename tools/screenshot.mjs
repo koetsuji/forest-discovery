@@ -127,6 +127,30 @@ async function main() {
     await page.sleep(1000);
     await shot(page, 'after-begin-desktop');
     expect(await page.evaluate('document.querySelector(".title") === null'), 'the title is gone after Begin');
+
+    console.log('Sound');
+    // Run the forest through a gust and listen for trees answering it.
+    let rustled = 0;
+    for (let i = 0; i < 40 && !rustled; i++) {
+      await page.evaluate('fd.advance(0.5)');
+      rustled = await page.evaluate('fd.ambience.rustling');
+    }
+    expect(rustled > 0, 'a gust reaching a tree starts a rustle');
+    expect(await page.evaluate('fd.audio.voices <= 16'), 'never more than 16 voices');
+    const mute = await page.evaluate(`(() => { const r = document.querySelector('.hud .btn').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, shown: getComputedStyle(document.querySelector('.hud')).opacity }; })()`);
+    expect(mute.shown === '1', 'the sound switch is on screen after Begin');
+    await page.mouse('mouseMoved', mute.x, mute.y);
+    await page.mouse('mousePressed', mute.x, mute.y);
+    await page.sleep(60);
+    await page.mouse('mouseReleased', mute.x, mute.y);
+    await page.sleep(250);
+    await shot(page, 'muted');
+    expect(await page.evaluate('fd.state.settings.muted === true && document.querySelector(".hud .btn").getAttribute("aria-pressed") === "true"'), 'the switch mutes and says so');
+    expect(await page.evaluate('JSON.parse(localStorage.getItem("forest-discovery.save")).settings.muted === true'), 'mute is saved');
+    await page.key('keyDown', 'm', 'KeyM', 77);
+    await page.key('keyUp', 'm', 'KeyM', 77);
+    await page.sleep(60);
+    expect(await page.evaluate('fd.state.settings.muted === false && document.querySelector(".hud .btn").getAttribute("aria-pressed") === "false"'), 'M turns the sound back on');
     checkConsole(page, 'after Begin');
 
     console.log('Keyboard and disabled');
@@ -152,10 +176,54 @@ async function main() {
     expect(!(await page.evaluate('document.querySelector(".title .btn").classList.contains("is-pressed")')), 'disabled: a press does nothing');
     await page.mouse('mouseReleased', off.x, off.y);
 
-    console.log('Scene, desktop');
-    await open(page, base, DESKTOP, 't=3&freeze=1&title=0');
-    await shot(page, 'scene-desktop');
-    checkConsole(page, 'scene');
+    console.log('Living forest');
+    const pixels = `(() => { const c = document.getElementById('view'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 2166136261; for (let i = 0; i < d.length; i++) h = Math.imul(h ^ d[i], 16777619); return h >>> 0; })()`;
+    await open(page, base, DESKTOP, 't=6.5&freeze=1&title=0');
+    const first = await page.evaluate(pixels);
+    await open(page, base, DESKTOP, 't=6.5&freeze=1&title=0');
+    await shot(page, 'forest-06_5s');
+    expect((await page.evaluate(pixels)) === first, 'the same seed and clock give the same picture');
+    expect(await page.evaluate('fd.foliage.snapshot().length') > 8, 'plants on screen are posed from the atlas');
+    expect(await page.evaluate('fd.leaves.count') > 0, 'a gust has shaken leaves loose');
+    // One whole gust schedule, a pose at a time.
+    const motion = await page.evaluate(`(() => {
+      const tally = { clumps: 0, rest: 0, one: 0, far: 0, whole: true, leaves: 0, reach: 0 };
+      for (let k = 0; k < 200; k++) {
+        fd.advance(0.1);
+        tally.leaves = Math.max(tally.leaves, fd.leaves.count);
+        for (const plant of fd.foliage.snapshot()) {
+          for (let i = 0; i < plant.dx.length; i++) {
+            const d = Math.max(Math.abs(plant.dx[i]), Math.abs(plant.dy[i]));
+            tally.clumps++;
+            if (d === 0) tally.rest++;
+            else if (d === 1) tally.one++;
+            else tally.far++;
+            tally.reach = Math.max(tally.reach, d);
+            if (!Number.isInteger(plant.dx[i]) || !Number.isInteger(plant.dy[i])) tally.whole = false;
+          }
+        }
+      }
+      return tally;
+    })()`);
+    const share = (/** @type {number} */ n) => `${Math.round((100 * n) / motion.clumps)}%`;
+    console.log(`        over 20 s: ${share(motion.rest)} of clumps at rest, ${share(motion.one)} one pixel away, ${share(motion.far)} further, farthest ${motion.reach} px, up to ${motion.leaves} leaves`);
+    expect(motion.whole, 'every clump sits on a whole pixel');
+    expect((motion.rest + motion.one) / motion.clumps > 0.85 && motion.far > 0, 'most clumps are at rest or one pixel away, and gusts push some further');
+    expect(motion.reach >= 4 && motion.reach <= 9, 'the strongest gust moves a clump 4 to 9 px');
+    expect(motion.leaves > 5 && motion.leaves <= 120, 'falling leaves stay inside their limit');
+    await shot(page, 'forest-26_5s');
+    await page.evaluate('fd.advance(6)');
+    await shot(page, 'forest-32_5s');
+    await page.key('keyDown', 'g', 'KeyG', 71);
+    await page.key('keyUp', 'g', 'KeyG', 71);
+    await page.sleep(100);
+    await shot(page, 'wind-overlay');
+    expect(await page.evaluate('fd.state.settings.showWind === true'), 'G shows the wind overlay');
+    await page.key('keyDown', 'g', 'KeyG', 71);
+    await page.key('keyUp', 'g', 'KeyG', 71);
+    expect(await page.evaluate('fd.state.settings.showWind === false'), 'G hides it again');
+    checkConsole(page, 'forest');
+    checkRequests(page, base, 'forest');
 
     console.log('Phone');
     await open(page, base, PHONE, 't=3&freeze=1');
@@ -172,6 +240,16 @@ async function main() {
     await page.sleep(1300);
     expect(await page.evaluate('document.querySelector(".title") === null'), 'touch: release begins the game');
     await shot(page, 'after-begin-phone');
+    // A rough stand-in for a mid-range phone: this machine's processor made four times slower.
+    await page.throttleCpu(4);
+    await page.goto(`${base}?seed=${SEED}&t=4&title=0`);
+    await page.waitFor('document.documentElement.dataset.ready === "1"');
+    await page.sleep(4000);
+    const cost = await page.evaluate('({ work: fd.perf.workMs, frames: fd.perf.frames })');
+    await page.throttleCpu(1);
+    await shot(page, 'forest-phone');
+    console.log(`        phone view, 4x slower processor: ${cost.work.toFixed(1)} ms of work per frame, ${Math.round(cost.frames / 4)} frames per second in this headless browser`);
+    expect(cost.work < 12, 'a frame takes under 12 ms of work on a 4x slower processor (16.7 ms is the 60 fps limit)');
     checkConsole(page, 'phone');
 
     console.log('Reduced motion');

@@ -13,6 +13,8 @@ import { tuning } from '../tuning.js';
 /**
  * @typedef {{ canvas: HTMLCanvasElement, x: number, y: number }} Layer offset inside the sprite canvas
  * @typedef {Layer & { cx: number, cy: number, weight: number, height: number, rise: number }} Clump
+ *   cx, cy: centre in sprite pixels. weight: 0.35 inside the canopy to 1 at its edge.
+ *   height: 0 at the canopy bottom to 1 at its top. rise: 0 at the foot to 1 at the highest clump.
  * @typedef {{
  *   id: string,
  *   w: number,
@@ -24,10 +26,64 @@ import { tuning } from '../tuning.js';
  *   base: Layer | null,
  *   inside: Layer | null,
  *   clumps: Clump[],
+ *   riseTop: number,
  *   leafColours: string[],
  * }} Sprite
  * @typedef {{ shape: 'broad' | 'cone' | 'oval' | 'bush' | 'rock', w: number, h: number }} StandInSpec
  */
+
+/**
+ * Cuts one layer out of the atlas into its own small canvas.
+ * @param {CanvasImageSource} image
+ * @param {number[]} rec [x, y, w, h, offsetX, offsetY, ...]
+ * @returns {Layer}
+ */
+function cutLayer(image, rec) {
+  const canvas = document.createElement('canvas');
+  canvas.width = rec[2];
+  canvas.height = rec[3];
+  const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+  ctx.drawImage(image, rec[0], rec[1], rec[2], rec[3], 0, 0, rec[2], rec[3]);
+  return { canvas, x: rec[4], y: rec[5] };
+}
+
+/**
+ * Builds a sprite from its atlas entry (tools/art_pipeline.py writes these).
+ * @param {string} id
+ * @param {any} def
+ * @param {CanvasImageSource} image
+ * @returns {Sprite}
+ */
+export function spriteFromAtlas(id, def, image) {
+  const footY = def.foot[1];
+  /** @type {Clump[]} */
+  const clumps = (def.clumps || []).map((/** @type {number[]} */ rec) => ({
+    ...cutLayer(image, rec),
+    cx: rec[6],
+    cy: rec[7],
+    weight: rec[8],
+    height: rec[9],
+    rise: 0,
+  }));
+  // rise: 0 at the foot, 1 at the highest clump. A bending trunk carries its tiers by this.
+  const top = clumps.reduce((min, c) => Math.min(min, c.cy), footY - 1);
+  for (const c of clumps) c.rise = Math.min(1, Math.max(0, (footY - c.cy) / (footY - top)));
+  const baseRec = def.trunk || def.frame;
+  return {
+    id,
+    w: def.w,
+    h: def.h,
+    footX: def.foot[0],
+    footY,
+    standIn: !!def.standin,
+    profile: def.profile || null,
+    base: baseRec ? cutLayer(image, baseRec) : null,
+    inside: def.inside ? cutLayer(image, def.inside) : null,
+    clumps,
+    riseTop: top,
+    leafColours: def.leaf || [],
+  };
+}
 
 /**
  * The silhouette of a stand-in as a mask of 0 and 1. Pure, so it can be tested.
@@ -123,6 +179,7 @@ export function flatStandIn(id, spec) {
     base: { canvas, x: 0, y: 0 },
     inside: null,
     clumps: [],
+    riseTop: 0,
     leafColours: [],
   };
 }

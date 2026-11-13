@@ -62,3 +62,20 @@ Not urgent: the final name, a license for the repo.
 | Interface timing | Things that leave are removed on a timer that matches their fade, never on `transitionend` or `animationend` | Chrome can send those events early. The check caught the title vanishing at once in about one run in five |
 | Module preloads | index.html lists every module the game imports. `tools/sync-preloads.mjs` writes the list and a test guards it | Without it the browser discovers imports one level at a time, which costs round trips on a phone |
 | Ground texture | Two streak fields, long bands and short dashes, with each row slid sideways a little | Gives the ragged horizontal dashes of hand placed pixel art, with no seams |
+| Sprites for M1 | Built with stand-ins. No SpriteCook tools were available in the session, so the owner gets the order for the style anchor | Owner's instruction for this case |
+| Stand-in plants | The art pipeline draws grey clump trees for every sprite that has settings but no PNG, and sends them through the real split and pack | A flat silhouette cannot show clump motion, and this way the whole pipeline and the atlas format are proven before the art exists. Grey keeps them plainly placeholders |
+| Bringing in a sprite | Drop the PNG in art/source/ under the sprite's name and run the pipeline. The stand-in disappears on its own | One step, no code change |
+| Wind values | Kimo's exact values as the starting point: wave 1.54 s and 69 px, his six gust patches, his spring profiles | They are tuned against the video we are matching. Recorded in wind-system.md under "As built" |
+| Loop size | Two values, sideways and upward, as in the article. The lift stays at 1 px in a gust | The spec had one value. The article's own formula keeps the lift small, which is what the video shows |
+| Gust bands | Band positions stretch with the height of the view | A tall phone view would otherwise have gusts only in its top third |
+| Gust strength in events | `gust-enter` carries the strength the gust is about to reach, read ahead from the field | At the moment a gust arrives its level is always the threshold, so every rustle sounded the same |
+| Pine | Trunk and inside layers bend by sliding rows, tiers ride at `lean * rise^2` | From the article. A static inside left a dark ghost of the tree top behind |
+| Pine tiers | Cut where the needle rows are suddenly narrower, then each cut follows the dark underside of the skirt above | A straight cut sliced through the tier below |
+| Shadows | Wood and rocks projected upright, clumps as squashed blobs where their centre lands, all into one buffer laid over the ground once | Reads as a canopy shadow instead of a cardboard cutout, moves clump by clump, and overlaps do not darken twice |
+| Ground under gusts | Short dashes of open grass go one shade lighter while a gust is over them | The article's meadow effect. Tufts and flowers are M3 sprites |
+| Leaf colours | Taken by the pipeline from the brightest leaf colours of each sprite | Grey on stand-ins, gold as soon as the real oak is in |
+| Ground palette | The game snaps each ground colour to the nearest colour of the sprite palette at load. Empty palette, provisional colours | "Sampled from the accepted sprites" without baking tuning values into a tool |
+| Sound switch | A visible mute control arrives with M1 instead of M5 | M1 is where sound becomes continuous, and a phone has no M key |
+| Toggle sound | A toggle stays quiet on release and answers with one note, up for on, down for off. Muting waits 0.14 s so its own note is heard | Two plucks and a toggle note on one press was too much |
+| Rustle limits | At most 6 at once, 90 ms apart, and none that would peak below a floor | Faint far rustles were taking the voices of near ones |
+| Debug handle | `window.fd` exposes the simulation to the checks, with `fd.advance(seconds)` | Lets the check step the forest pose by pose and measure it |

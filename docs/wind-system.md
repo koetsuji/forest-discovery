@@ -54,7 +54,7 @@ One module of pure functions of world position `p` and time `t`. No state except
 
     along(p) = p.x + 0.25 * p.y
 
-**Wave phase.** Period T about 1.5 s, wavelength L about 70 px, so the wave travels at about 47 px per second:
+**Wave phase.** Period T 1.54 s, wavelength L 69 px, so the wave travels at about 45 px per second:
 
     phase(p, t) = 2 * PI * (t / T - along(p) / L)
 
@@ -67,7 +67,13 @@ Phase depends on world position, not on the plant. That is what carries the wave
 
 Our world is endless, so patch positions are measured relative to the camera. Gusts always cross the view.
 
+As built: `d` is measured from the top left corner of the view, and every patch comes round again each schedule period, so `d` wraps every `20 s * speed`. A patch's entry time is the moment its centre crosses that corner. The band is a Gaussian falloff too, not a hard edge, and band positions are given for a view 270 px tall and stretch with the real view, so a tall phone screen gets the same mix of full and partial gusts. The field takes the view as an argument: `gust(x, y, t, view)`. It stays a pure function.
+
+The schedule is Kimo's: a big one (strength 1.25) with a tail across the whole view, and four smaller ones (0.55 to 0.9) on bands. The values are in `src/tuning.js`.
+
 **Breeze.** The same patches, wider and weaker, plus a small base level. It starts the loops before a gust arrives and lets them die out after it. In still air the loops shrink to nothing.
+
+As built: patch length times 2.2, band height times 1.6, the sum times 1.6, capped at 1, plus a base of 0.06. The base is far too small to move a clump. It is there so the air never goes fully silent.
 
 ## Posing a plant
 
@@ -86,6 +92,8 @@ Poses update on a **pose clock, 10 times per second**, not every frame. The step
     dy = -clamp(round(a * up(ph)),    0, round(a))
 
 With a = 1 this steps through (0,0), (0,-1), (1,-1), (1,0): up, right, down, back. The clamp keeps bigger loops inside their size. Inner clumps stay still in a breeze and only join in during a gust, because their weight keeps `a` under half a pixel.
+
+As built: the loop size has two values, as in the article. Sideways `A = 0.9 * breeze + 1.3 * gust`, upward `A = 0.75 * breeze + 0.5 * gust`. So a gust widens the loop to 2 or 3 px sideways while the lift stays at 1 px.
 
 **2. Lean of the whole plant**
 
@@ -110,11 +118,15 @@ The spring runs every frame. Its result is applied on the pose clock:
 
 In the strongest gust the outer clumps of an oak should end up around 6 px from rest. For a pine, the branch tiers are the clumps: they bob a pixel or two on top of the bend.
 
+As built, with the article's values: oak and birch push 2.2 px, swing 2.2 s, damping 0.35. Pine push 3.6 px, swing 2.8 s, damping 0.22. Bush push 1.4 px, swing 1.0 s, damping 0.35. On a pine a row at height `rise` (0 at the foot, 1 at the highest tier) shifts by `round(lean * rise^2)`, and each tier rides the trunk at its own height. The dark inside layer bends with the trunk.
+
+Measured: a pine tip bends 5.5 px in the big gust, as in the article. An outer oak clump reaches 5 px, not 6, because the lean peaks a moment after the loop does. Raise the oak's push if that looks too tame next to the video.
+
 ## Around the trees
 
-- **Falling leaves.** Shed only while a gust is on a tree. About 2 px each, carried along the wind, flipping between flat and edge-on as they fall, then resting on the ground and fading.
-- **Shadows.** Never baked into sprites. A shadow is the plant's current pose, flattened and darkened on the ground, so shadows move with the canopy.
-- **Ground.** Grass tufts and flowers under a gust shift by one pixel or one shade as it passes.
+- **Falling leaves.** Shed only while a gust is on a tree. About 2 px each, carried along the wind, flipping between flat and edge-on as they fall, then resting on the ground and fading. As built: a gust is "on" a plant above 0.3 and off again below 0.18. Leaves take their colours from the brightest leaf colours of the plant's sprite.
+- **Shadows.** Never baked into sprites. A shadow is the plant's current pose, flattened and darkened on the ground, so shadows move with the canopy. As built: light comes from the top left, so a point throws its shadow down and to the right, further the higher it is. Wood and rocks are projected upright. A clump lands as its own shape, squashed to half height, where its centre would land. All shadows go into one buffer first, so overlapping shadows do not darken twice.
+- **Ground.** Grass tufts and flowers under a gust shift by one pixel or one shade as it passes. As built: short dashes of open grass go one shade lighter while a gust is over them. Tufts and flowers arrive with their sprites in M3.
 - **Sound.** The audio engine reads `gust()` and `breeze()` at the listener and near trees, so what you hear is the wind you see (sound-and-feel.md).
 
 ## Rules for the code
@@ -123,7 +135,7 @@ In the strongest gust the outer clumps of an oak should end up around 6 px from 
 - The field is pure and deterministic: same `p` and `t`, same answer. Tests depend on it.
 - Pose only what is on screen. Keep the last pose between clock ticks.
 - All tuning values live in one file, grouped by profile.
-- A debug overlay, off by default, draws gust patches and wind streaks like the explainer part of the video.
+- A debug overlay, off by default, draws gust patches and wind streaks like the explainer part of the video. As built: G toggles it, and so does `?wind=1` in the link. It also tints every clump that is away from rest.
 
 ## Done when
 

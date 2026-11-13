@@ -32,9 +32,10 @@ export function createStepper({ stepSec, maxFrameSec }) {
 }
 
 /**
- * @param {{ step: (dt: number) => void, draw: () => void, stepsPerSec: number, maxFrameSec: number }} opts
+ * @param {{ step: (dt: number) => void, draw: () => void, stepsPerSec: number, maxFrameSec: number, onFrame?: (workMs: number) => void }} opts
+ *   onFrame hears how long the steps and the drawing of each frame took.
  */
-export function createLoop({ step, draw, stepsPerSec, maxFrameSec }) {
+export function createLoop({ step, draw, stepsPerSec, maxFrameSec, onFrame }) {
   const stepSec = 1 / stepsPerSec;
   const stepper = createStepper({ stepSec, maxFrameSec });
   /** @type {number | null} */
@@ -50,8 +51,10 @@ export function createLoop({ step, draw, stepsPerSec, maxFrameSec }) {
     if (last === null) last = now;
     const steps = frozen ? 0 : stepper.advance((now - last) / 1000);
     last = now;
+    const began = onFrame ? performance.now() : 0;
     for (let i = 0; i < steps; i++) step(stepSec);
     draw();
+    if (onFrame) onFrame(performance.now() - began);
   }
 
   function resume() {

@@ -109,9 +109,9 @@ export const tuning = {
   },
 
   leaves: {
-    maxAlive: 140,
+    maxAlive: 120,
     /** Leaves per second from a broad tree in a gust of strength 1. */
-    shedPerSecAtGust1: 3.2,
+    shedPerSecAtGust1: 1.1,
     fallPxPerSec: 22,
     driftPxPerSec: 34,
     /** Extra drift per unit of gust at the leaf. */
@@ -126,8 +126,10 @@ export const tuning = {
     reachYPerPx: 0.36,
     /** Canopy shadows are the clump shapes, flattened by this factor. */
     squash: 0.5,
-    colour: '#12333c',
-    alpha: 0.62,
+    colour: '#0f3340',
+    alpha: 0.66,
+    /** Things this far outside the view can still throw a shadow into it. */
+    viewMarginPx: 90,
   },
 
   standIn: {
@@ -148,10 +150,38 @@ export const tuning = {
     levelVariance: 0.12,
     hoverMinGapMs: 60,
     maxVoices: 16,
+    /** Wind bed. Air is the low layer, leaf the band that opens with a gust. */
+    airBaseHz: 260,
+    airOpenHz: 420,
+    airBaseGain: 0.05,
+    airBreezeGain: 0.09,
+    leafBaseHz: 620,
+    leafOpenHz: 900,
+    leafBreezeGain: 0.03,
+    leafGustGain: 0.17,
+    /** Canopy rustle: one swell per tree a gust reaches, loudest near the listener. */
+    rustleGain: 0.2,
+    /** A rustle that would peak below this is not played. */
+    rustleFloor: 0.02,
+    rustleRangePx: 190,
+    rustlePanPx: 250,
+    rustleMinGapMs: 90,
+    maxRustles: 6,
   },
 
   feel: {
     /** Vibration on press, where the device supports it. */
     pressVibrationMs: 8,
+  },
+
+  /** The wind overlay (G, or ?wind=1). */
+  debug: {
+    cellPx: 8,
+    gustColour: '#d8ecff',
+    streakColour: 'rgba(236, 243, 246, 0.75)',
+    /** One wind streak per this many pixels of view. */
+    pxPerStreak: 2600,
+    /** Laid over clumps that are away from rest. */
+    tint: 'rgba(255, 236, 150, 0.5)',
   },
 };

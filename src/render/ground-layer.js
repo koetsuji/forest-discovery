@@ -7,6 +7,7 @@
 import { tuning } from '../tuning.js';
 import { CHUNK, chunksIn, createChunkCache } from '../world/chunks.js';
 import { GROUND_COLOURS, paintGroundChunk } from '../world/ground.js';
+import { gust } from '../wind/field.js';
 
 /**
  * @typedef {{ canvas: HTMLCanvasElement, streaks: Int16Array, x: number, y: number }} BakedChunk
@@ -26,10 +27,13 @@ function packColour(hex) {
 /**
  * @param {number} seed
  * @param {import('../world/clearing.js').Scene} scene
- * @param {Record<string, string>} colours ground colours by role
  */
-export function createGroundLayer(seed, scene, colours) {
-  const packed = GROUND_COLOURS.map((name) => packColour(colours[name]));
+export function createGroundLayer(seed, scene) {
+  /** Ground colours by role. Set once the atlas has said what the sprite palette is. */
+  /** @type {Record<string, string> | null} */
+  let colours = null;
+  /** @type {number[]} */
+  let packed = [];
   let firstFrame = true;
 
   /** @param {number} cx @param {number} cy @returns {BakedChunk} */
@@ -47,13 +51,51 @@ export function createGroundLayer(seed, scene, colours) {
   }
 
   const cache = createChunkCache(bake, tuning.world.keepChunks);
+  /** Grass dashes a gust is passing over, as x, y, width in world pixels. */
+  /** @type {number[]} */
+  const lit = [];
 
   return {
+    /** @param {Record<string, string>} next colour per role in GROUND_COLOURS */
+    setColours(next) {
+      colours = next;
+      packed = GROUND_COLOURS.map((name) => packColour(next[name]));
+    },
+    /**
+     * On the pose clock: grass under a gust goes one shade lighter as it passes.
+     * @param {number} t
+     * @param {import('../core/camera.js').View} view
+     */
+    pose(t, view) {
+      lit.length = 0;
+      for (const chunk of this.chunksUnder(view)) {
+        const s = chunk.streaks;
+        for (let i = 0; i < s.length; i += 3) {
+          const x = chunk.x + s[i];
+          const y = chunk.y + s[i + 1];
+          if (x + s[i + 2] < view.x || x > view.x + view.w || y < view.y || y >= view.y + view.h) continue;
+          if (gust(x, y, t, view) > tuning.ground.streakGustLevel) lit.push(x, y, s[i + 2]);
+        }
+      }
+    },
+    /**
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {import('../core/camera.js').View} view
+     */
+    drawLit(ctx, view) {
+      if (!colours) return;
+      ctx.fillStyle = colours.grassHi;
+      for (let i = 0; i < lit.length; i += 3) ctx.fillRect(lit[i] - view.x, lit[i + 1] - view.y, lit[i + 2], 1);
+    },
     /**
      * @param {CanvasRenderingContext2D} ctx
      * @param {import('../core/camera.js').View} view
      */
     draw(ctx, view) {
+      if (!colours) {
+        ctx.clearRect(0, 0, view.w, view.h);
+        return;
+      }
       // Under chunks that are not baked yet.
       ctx.fillStyle = colours.floor;
       ctx.fillRect(0, 0, view.w, view.h);

@@ -43,6 +43,7 @@ Why no engine: the game needs a camera, sprites and sound, and the browser alrea
     assets/               game-ready atlases and JSON (built, committed)
     art/source/           sprites exactly as generated (inputs)
     art/config/           per-sprite pipeline settings
+    art/sheets/           contact sheets written by the pipeline, to be looked at
     tools/                art pipeline, size report, screenshot script, local server
     tests/                node --test files
     docs/                 these documents, decisions.md, devlog.md
@@ -86,7 +87,7 @@ Why no engine: the game needs a camera, sprites and sound, and the browser alrea
 
 - An **actor** is anything that acts: position, velocity, sprite state, and an `update(dt, world)` function. The wanderer is the only actor in the base. Creatures arrive later as more actors with their own small state machines.
 - A **system** is a module with `init`, `update` and optional `draw`, registered in `main.js` in a fixed order.
-- The **event bus** carries facts in the past tense: `step`, `gust-enter`, `leaf-fall`, `landmark-found`, `ui-press`, `ui-release`. Audio and interface subscribe to them.
+- The **event bus** carries facts in the past tense: `step`, `gust-enter`, `leaf-fall`, `landmark-found`, `ui-press`, `ui-release`. Audio and interface subscribe to them. In use so far: `ui-press`, `ui-release`, `ui-hover`, `ui-toggle`, `game-began`, `gust-enter`, `leaf-fall`, `settings-changed`, `view-resized`.
 - **Interaction.** There is one verb, interact: E, Enter, or a tap on the thing. The interact system finds the nearest thing in range that has an `interact` block, highlights it, and runs its handler. In the base only landmarks use it. Fire, pickups and creatures will use the same path.
 
 ## Extension points
@@ -127,7 +128,7 @@ Devices are translated into intents (`move(x, y)`, `interact`, `pause`). The gam
 ## Assets
 
 - **Format.** PNG at exact pixel size, reduced to a shared palette, packed into a few atlases. SVG only for interface icons.
-- **Atlas JSON** lists frames and, for plants, the layers from wind-system.md: trunk, inside, and clumps with centre, weight and height.
+- **Atlas JSON** lists frames and, for plants, the layers from wind-system.md: trunk, inside, and clumps with centre, weight and height. A layer is `[x, y, w, h, offsetX, offsetY]`: where it sits in the atlas and where it goes on the sprite's canvas. A clump adds `[centreX, centreY, weight, height]`.
 - **Loading.** The title screen needs only the first atlas. A sprite that fails to load is replaced by a flat stand-in and reported in the console. Never a crash.
 - **Pipeline.** See art-guide.md.
 

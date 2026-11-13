@@ -133,6 +133,7 @@ export function createSfx(audio, bus) {
 
   bus.on('ui-press', knock);
   bus.on('ui-release', (/** @type {{ tone?: string }} */ detail) => {
+    if (detail && detail.tone === 'toggle') return;
     const back = detail && detail.tone === 'back';
     pluck(back ? A4 : D4, 0, 0.5, 0.085);
     pluck(back ? D4 : A4, 0.055, 0.45, 0.09);

@@ -6,8 +6,8 @@ Claude updates this file at the end of every session.
 
 | | Milestone | Status |
 |---|---|---|
-| M0 | Skeleton | built, live check pending |
-| M1 | Living forest | todo |
+| M0 | Skeleton | done, 13 Nov 2026 |
+| M1 | Living forest | built on stand-ins, 13 Nov 2026. Waits for the sprites |
 | M2 | The wanderer | todo |
 | M3 | Endless forest | todo |
 | M4 | Sound and atmosphere | todo |
@@ -48,6 +48,13 @@ Done when:
 - Every point under "Done when" in wind-system.md holds
 - Each plant's contact sheet has been looked at and accepted
 - 60 fps on a phone with a full clearing on screen
+
+Where it stands (13 Nov 2026):
+
+- Built and live with grey stand-in plants. Whole pixels and the wind tests hold. Ripples, sequence and gust patches are there and can be seen with the overlay (G).
+- Still to do before M1 is closed: generate the style anchor and have the owner approve it, then `pine-01`, `birch-01`, `bush-01`, `rock-01`. Run them through the pipeline, accept their contact sheets, and judge the forest next to the video with real art.
+- Not yet shown: 60 fps on a real phone. The estimate from a slowed processor is 6 ms of work per frame.
+- Ground colours are provisional until the first accepted sprite gives the palette.
 
 ## M2 The wanderer
 

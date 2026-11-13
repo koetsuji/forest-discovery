@@ -99,7 +99,9 @@ export function createAudio(settings) {
     /** Volume or mute changed in the settings. */
     applySettings() {
       if (!ctx || !master) return;
-      master.gain.setTargetAtTime(settings.muted ? 0 : settings.volume, ctx.currentTime, 0.02);
+      // Going quiet waits a moment, so the switch's own note is still heard.
+      const delay = settings.muted ? 0.14 : 0;
+      master.gain.setTargetAtTime(settings.muted ? 0 : settings.volume, ctx.currentTime + delay, 0.03);
     },
     /** @param {BusName} name */
     bus(name) {
@@ -107,6 +109,10 @@ export function createAudio(settings) {
     },
     get noise() {
       return /** @type {AudioBuffer} */ (noiseBuffer);
+    },
+    /** The mix before the limiter. The checks measure levels here. */
+    get master() {
+      return master;
     },
     get ctx() {
       return ctx;
