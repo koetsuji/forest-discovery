@@ -12,7 +12,7 @@ docs/ is the source of truth. If it disagrees with any other copy, docs/ wins.
 ## Who decides
 
 - Claude decides technical choices, structure, tuning, wording and order of work. Decide, log the decision and the reason in docs/decisions.md, move on.
-- The owner decides: spending money or SpriteCook credits, the identity of the game (name, mood, story, the look of the wanderer, the style anchor), going over a budget in docs/architecture.md, deleting work, anything published outside this repo and its Pages site.
+- The owner decides: spending money or Sprite AI tokens, the identity of the game (name, mood, story, the look of the wanderer, the style anchor), going over a budget in docs/architecture.md, deleting work, anything published outside this repo and its Pages site.
 - Ask at most three questions at a time, each with a recommendation. With no answer, take the most reasonable reading, say which one, and continue with what does not depend on it.
 
 ## How to work

@@ -7,7 +7,7 @@ Claude updates this file at the end of every session.
 | | Milestone | Status |
 |---|---|---|
 | M0 | Skeleton | done, 13 Nov 2026 |
-| M1 | Living forest | built on stand-ins, 13 Nov 2026. Waits for the sprites |
+| M1 | Living forest | real sprites in, 13 Nov 2026. Waits for the owner's look next to the video and on a real phone |
 | M2 | The wanderer | todo |
 | M3 | Endless forest | todo |
 | M4 | Sound and atmosphere | todo |
@@ -49,12 +49,12 @@ Done when:
 - Each plant's contact sheet has been looked at and accepted
 - 60 fps on a phone with a full clearing on screen
 
-Where it stands (13 Nov 2026):
+Where it stands (13 Nov 2026, session 2):
 
-- Built and live with grey stand-in plants. Whole pixels and the wind tests hold. Ripples, sequence and gust patches are there and can be seen with the overlay (G).
-- Still to do before M1 is closed: generate the style anchor and have the owner approve it, then `pine-01`, `birch-01`, `bush-01`, `rock-01`. Run them through the pipeline, accept their contact sheets, and judge the forest next to the video with real art.
-- Not yet shown: 60 fps on a real phone. The estimate from a slowed processor is 6 ms of work per frame.
-- Ground colours are provisional until the first accepted sprite gives the palette.
+- All five M1 sprites are generated, accepted and in the atlas: `oak-01` (the anchor), `pine-01`, `birch-01`, `bush-01`, `rock-01`. Each contact sheet was looked at. Ground colours now come from the shared palette.
+- Checks pass with the real art: whole pixels, 78 percent of clumps at rest over a gust schedule, farthest clump 7 px, console clean. 115 KB transferred, 27 KB of art.
+- Left before M1 is closed: the owner judges the forest next to the video, and 60 fps on a real phone. The slowed-processor estimate is 10 to 12 ms of work per frame, about 1 ms more than the stand-ins on the same machine.
+- Candidate for a redo: the birch canopy reads loud yellow next to the oaks.
 
 ## M2 The wanderer
 

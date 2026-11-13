@@ -11,6 +11,8 @@ Made by the owner on 13 Nov 2026:
 | Art source | AI generated sprites from day one (art-guide.md) |
 | World | Endless forest from a seed |
 | Mood | Blend: outlaw greenwood with a little magic |
+| Sprite tool | Sprite AI, on the Creator plan (art-guide.md) |
+| Style anchor | `oak-01`, the first of three test oaks |
 
 ## Claude's calls
 
@@ -79,3 +81,17 @@ Not urgent: the final name, a license for the repo.
 | Toggle sound | A toggle stays quiet on release and answers with one note, up for on, down for off. Muting waits 0.14 s so its own note is heard | Two plucks and a toggle note on one press was too much |
 | Rustle limits | At most 6 at once, 90 ms apart, and none that would peak below a floor | Faint far rustles were taking the voices of near ones |
 | Debug handle | `window.fd` exposes the simulation to the checks, with `fd.advance(seconds)` | Lets the check step the forest pose by pose and measure it |
+
+### 13 Nov 2026, session 2
+
+| Topic | Call | Why |
+|---|---|---|
+| Route to Sprite AI | Its REST API, through scripts the owner runs on his machine, one per batch. The key is typed when the script runs and never stored | The session's shell is refused by sprite-ai.art. The claude.ai connector to their MCP server fails while the same key works from the owner's terminal |
+| Camera value | `three_quarter` | `top_down` gave the same side-on tree, with a grass patch |
+| Shared palette | The 24 colours of `oak-01` plus two golds, three bark whites and four stone greys: 33 colours, locked with `palette_id` on every sprite after the anchor | The anchor alone has no white or grey for a birch or a rock. Sprite AI obeyed the lock exactly |
+| Style reference | `reference_asset_id` not used across subjects | Its docs say it keeps the subject. It is for variations of one sprite |
+| Picks from batch 02 | Pine b, birch a, bush b, rock b | The others had a ground tile or disc of grass, glaring highlights, or read as a pile of stones |
+| Grass at the roots | The pipeline removes small tufts with `strip_ground` in the sprite's config. A tile or disc of grass means a new sprite | Two of the kept sprites had a tuft. Removing pixels keeps the art generated, regenerating for a few blades wastes tokens |
+| Wood hues | 335 to 40 degrees instead of 5 to 40 | Our dark bark is a purple brown. The pine's trunk was being split as needles |
+| Pine needles | `leaf_cut` limits needles to the canopy rows, as it already did for leafy plants | Below the lowest skirt there is only trunk |
+| Birch clumps | `min_dist` 8, giving 22 clumps | At 5 it made 30, over the cap of 24 the tests hold |

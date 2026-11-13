@@ -67,8 +67,39 @@ def undo_enlargement(rgba):
     return rgba, 1
 
 
-def normalize(name, rgba, notes):
+def strip_ground(rgba, rows, notes):
+    """Erase grass under a sprite: green pixels in its lowest rows.
+
+    Rule 3 in docs/art-guide.md allows no ground patch. Some generated trees
+    come with a tuft of grass at the roots. Only pixels are removed, nothing is
+    drawn, and the source PNG stays exactly as generated.
+    """
+    solid = rgba[..., 3] >= 128
+    rgb = rgba[..., :3].astype(int)
+    green = solid & (rgb[..., 1] > rgb[..., 0]) & (rgb[..., 1] > rgb[..., 2])
+    # Count the rows up from the lowest root, not from grass hanging below it.
+    bottom = np.where(solid & ~green)[0].max()
+    band = np.arange(rgba.shape[0])[:, None] > bottom - rows
+    cut = green & band
+    # Petals and blades left loose in the band once the grass is gone.
+    rest = solid & ~cut
+    labels, count = ndimage.label(rest, structure=np.ones((3, 3)))
+    if count > 1:
+        sizes = ndimage.sum(rest, labels, index=range(1, count + 1))
+        main = 1 + int(np.argmax(sizes))
+        loose = rest & (labels != main) & band & (sizes[labels - 1] < 12)
+        cut |= loose
+    if cut.any():
+        rgba = rgba.copy()
+        rgba[cut] = 0
+        notes.append(f"{int(cut.sum())} grass pixels removed from the lowest {rows} rows")
+    return rgba
+
+
+def normalize(name, rgba, notes, cfg=None):
     rgba, factor = undo_enlargement(rgba)
+    if cfg and cfg.get("strip_ground"):
+        rgba = strip_ground(rgba, cfg["strip_ground"], notes)
     if factor > 1:
         notes.append(f"was enlarged {factor}x, brought back to {rgba.shape[1]} x {rgba.shape[0]}")
     alpha = rgba[..., 3]
@@ -121,7 +152,8 @@ def wood_masks(rgba, wood_colours):
     hsv = rgb2hsv(rgb / 255)
     hue = hsv[..., 0] * 360
     lum = luminance(rgb)
-    wood = solid & (hue >= 5) & (hue <= 40) & (hsv[..., 1] > 0.22) & (lum < 125)
+    # Browns from red to orange, and the purple browns of dark bark (hue 335 and up).
+    wood = solid & ((hue >= 335) | (hue <= 40)) & (hsv[..., 1] > 0.22) & (lum < 125)
     bark = solid & (hsv[..., 1] < 0.16) & (lum > 95)
     return wood, bark
 
@@ -179,6 +211,10 @@ def split_tiers(rgba, cfg, wood_colours):
     solid = rgba[..., 3] > 0
     wood, bark = wood_masks(rgba, wood_colours)
     needles = solid & ~wood & ~bark
+    # Below the lowest skirt there is only trunk, whatever its colour.
+    ys = np.where(solid)[0]
+    leaf_line = ys.min() + cfg.get("leaf_cut", 1) * (ys.max() - ys.min() + 1)
+    needles &= np.arange(solid.shape[0])[:, None] < leaf_line
     widths = needles.sum(axis=1).astype(float)
     rows = np.where(widths > 0)[0]
     top, bottom = rows.min(), rows.max()
@@ -402,7 +438,7 @@ def build():
             raw, wood_colours = standins.draw(cfg.get("profile") or cfg["stand_in"])
         else:
             raw = np.array(Image.open(source).convert("RGBA"))
-        rgba = normalize(name, raw, notes)
+        rgba = normalize(name, raw, notes, None if stand_in else cfg)
         sprites[name] = {"cfg": cfg, "rgba": rgba, "stand_in": stand_in, "wood": wood_colours, "notes": notes}
 
     # The shared palette comes from real sprites only. Stand-ins keep their greys.

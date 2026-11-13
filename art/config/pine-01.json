@@ -1,1 +1,1 @@
-{ "profile": "pine", "split": "tiers", "tiers": 8 }
+{ "profile": "pine", "split": "tiers", "tiers": 8, "strip_ground": 16, "leaf_cut": 0.72 }
