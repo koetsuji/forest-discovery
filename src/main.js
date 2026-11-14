@@ -80,7 +80,7 @@ function step(dt) {
   sim.t += dt;
   camera.update(dt);
   const view = camera.view(renderer.w, renderer.h);
-  const seen = world.visible(view, tuning.shadows.viewMarginPx);
+  const seen = world.visible(view);
   foliage.update(dt, sim.t, view, seen);
   leaves.update(dt, sim.t, view);
 
@@ -103,8 +103,8 @@ function draw() {
   layers.draw(renderer.ctx, camera.view(renderer.w, renderer.h));
 }
 
-/** How long a frame's work takes, smoothed. Read by the checks. */
-const perf = { workMs: 0, worstMs: 0, frames: 0 };
+/** How long a frame's work takes: smoothed, worst, and the last 240 frames. Read by the checks. */
+const perf = { workMs: 0, worstMs: 0, frames: 0, recent: new Float32Array(240) };
 
 const loop = createLoop({
   step,
@@ -112,6 +112,7 @@ const loop = createLoop({
   stepsPerSec: tuning.loop.stepsPerSec,
   maxFrameSec: tuning.loop.maxFrameSec,
   onFrame(ms) {
+    perf.recent[perf.frames % perf.recent.length] = ms;
     perf.frames++;
     perf.workMs += (ms - perf.workMs) * 0.05;
     perf.worstMs = Math.max(perf.worstMs, ms);

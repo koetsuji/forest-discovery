@@ -5,13 +5,35 @@
  */
 
 import { flatStandIn } from '../render/sprites.js';
+import { shadowOf } from '../render/shadows.js';
 import { buildClearing } from './clearing.js';
 import { kinds } from './kinds/index.js';
 
 /**
  * @typedef {import('./clearing.js').WorldObject} WorldObject
  * @typedef {import('../render/sprites.js').Sprite} Sprite
+ * @typedef {{ x0: number, y0: number, x1: number, y1: number }} Reach box around the foot
  */
+
+/** Room for a clump that sways or lifts out of its sprite's box (see wind/foliage.js). */
+const SWAY_X = 14;
+const SWAY_UP = 4;
+
+/**
+ * Everything a sprite can paint, as a box around its foot: its own pixels,
+ * however far its clumps sway, and its shadow.
+ * @param {Sprite} sprite
+ * @returns {Reach}
+ */
+export function reachOf(sprite) {
+  const shadow = shadowOf(sprite).box;
+  return {
+    x0: Math.min(-sprite.footX - SWAY_X, shadow.x0 - SWAY_X),
+    y0: Math.min(-sprite.footY - SWAY_UP, shadow.y0 - SWAY_UP),
+    x1: Math.max(sprite.w - sprite.footX + SWAY_X, shadow.x1 + SWAY_X),
+    y1: Math.max(sprite.h - sprite.footY, shadow.y1 + SWAY_UP),
+  };
+}
 
 /**
  * @param {number} seed
@@ -20,8 +42,11 @@ export function createWorld(seed) {
   const scene = buildClearing(seed);
   /** @type {Map<string, Sprite>} */
   const sprites = new Map();
-  let tallest = 0;
-  let widest = 0;
+  /** @type {Map<string, Reach>} */
+  const reaches = new Map();
+  /** The furthest any sprite reaches above and below its foot. */
+  let maxUp = 0;
+  let maxDown = 0;
 
   return {
     seed,
@@ -45,8 +70,10 @@ export function createWorld(seed) {
           missing.push(kind.sprite);
         }
         sprites.set(kind.sprite, sprite);
-        tallest = Math.max(tallest, sprite.h);
-        widest = Math.max(widest, sprite.w);
+        const reach = reachOf(sprite);
+        reaches.set(kind.sprite, reach);
+        maxUp = Math.max(maxUp, -reach.y0);
+        maxDown = Math.max(maxDown, reach.y1);
       }
       // Expected while the art is still being made, so it is not a warning.
       if (missing.length) console.debug(`[assets] flat stand-ins for: ${missing.join(', ')}`);
@@ -56,24 +83,29 @@ export function createWorld(seed) {
       return /** @type {Sprite} */ (sprites.get(object.kind.sprite));
     },
     /**
-     * Objects whose sprite can touch the rectangle, in draw order.
+     * Objects that can paint into the rectangle, body or shadow, in draw order.
      * @param {{ x: number, y: number, w: number, h: number }} rect
-     * @param {number} [margin]
      * @returns {WorldObject[]}
      */
-    visible(rect, margin = 0) {
+    visible(rect) {
       /** @type {WorldObject[]} */
       const out = [];
       if (!sprites.size) return out;
-      const left = rect.x - widest - margin;
-      const right = rect.x + rect.w + widest + margin;
-      const top = rect.y - margin;
-      const bottom = rect.y + rect.h + tallest + margin;
+      const right = rect.x + rect.w;
+      const bottom = rect.y + rect.h;
       for (const object of scene.objects) {
-        if (object.y < top) continue;
+        if (object.y + maxDown <= rect.y) continue;
         // Objects are sorted by y, so nothing further down the list can show.
-        if (object.y > bottom) break;
-        if (object.x > left && object.x < right) out.push(object);
+        if (object.y - maxUp >= bottom) break;
+        const reach = /** @type {Reach} */ (reaches.get(object.kind.sprite));
+        if (
+          object.x + reach.x1 > rect.x &&
+          object.x + reach.x0 < right &&
+          object.y + reach.y1 > rect.y &&
+          object.y + reach.y0 < bottom
+        ) {
+          out.push(object);
+        }
       }
       return out;
     },

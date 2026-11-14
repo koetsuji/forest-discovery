@@ -95,3 +95,13 @@ Not urgent: the final name, a license for the repo.
 | Wood hues | 335 to 40 degrees instead of 5 to 40 | Our dark bark is a purple brown. The pine's trunk was being split as needles |
 | Pine needles | `leaf_cut` limits needles to the canopy rows, as it already did for leafy plants | Below the lowest skirt there is only trunk |
 | Birch clumps | `min_dist` 8, giving 22 clumps | At 5 it made 30, over the cap of 24 the tests hold |
+
+### 14 Nov 2026, session 3
+
+| Topic | Call | Why |
+|---|---|---|
+| White specks | `despeck` in the pipeline repaints tiny pale specks in `oak-01` and `pine-01` with the colour around them | A white blob at the oak's fork showed on every oak, and the pine's specks stayed still while its tiers moved. The source PNGs stay as generated |
+| Rocks in the meadow | Two instead of four, at (-74, 4) and (22, 116) | There is one rock sprite. Four copies in one meadow read as a pattern |
+| Clearing in sight | A seeded tree, bush or rock is not placed where its sprite would stand in front of something placed by hand | A birch from the seeded forest hid the lower rock on a tall phone view |
+| Culling | Each sprite gets its exact reach: its pixels, room for its clumps to sway, and its shadow. Only what reaches the view is posed and drawn | The fixed margin posed 97 plants for a phone view, of which about half could never show. Now 47. Frames rendered with a loose cull and with this one are identical, pixel for pixel, at 3 screen sizes and 5 moments, leaves aside |
+| Frame-time check | The check reads the median of the last 240 frames, under 10 ms of work on a 4x slower processor, and prints the 1 in 20 slowest | A smoothed average let one slow frame fail it on a busy machine, and it hid the real cost, which is the pose tick |

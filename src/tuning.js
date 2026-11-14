@@ -128,8 +128,6 @@ export const tuning = {
     squash: 0.5,
     colour: '#0f3340',
     alpha: 0.66,
-    /** Things this far outside the view can still throw a shadow into it. */
-    viewMarginPx: 90,
   },
 
   standIn: {

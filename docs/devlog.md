@@ -2,6 +2,32 @@
 
 One entry per working session, newest first: what was done, what was seen running, what is open.
 
+## 14 Nov 2026, session 3
+
+Small fixes after the first look at the real sprites.
+
+Done:
+
+- White specks gone: the oak had a white blob at its trunk fork, the pine white and grey pixels in its needles. The pipeline's new `despeck` repaints them from the colour around them.
+- The meadow has two rocks instead of four identical ones, and seeded trees no longer stand in front of the hand-placed clearing (a birch hid a rock on the phone).
+- Culling by each sprite's exact reach: 47 plants posed for a phone view instead of 97, with identical pictures.
+- The frame-time check now reads the median frame and prints the slow tail.
+
+Seen running, in headless Chrome at 1920 x 1080, at the owner's 1518 x 923 at 1.6x, and as a 393 x 852 phone at 3x, and on the live page in the owner's Chrome before these changes:
+
+- Begin, the sound switch and the wind overlay work on the live page. On the owner's screen the view is 405 x 247 at scale 6, about 2 ms of work per frame.
+- 54 tests pass, the screenshot run passes, console clean.
+
+Measured, honestly:
+
+- With the processor slowed four times and no graphics card, the median frame is 3.4 ms of work, but the frame that carries a pose tick takes about 12 ms, and 1 frame in 20 goes over 25 ms. That is the plant canvases being redrawn 10 times a second. Before the culling it was 26 ms and over 45 ms. A real phone draws canvases on its graphics chip, so this is a pessimistic stand-in. It still has to be tried on a real phone.
+
+Open:
+
+- The owner's own list of small things.
+- 60 fps on a real phone. If the pose tick stutters there, the next step is to redraw fewer plant canvases per tick.
+- Birch canopy loud yellow, bushes with an orange stem: both art, both a redo for later.
+
 ## 13 Nov 2026, session 2
 
 The M1 forest now runs on real sprites. Grey stand-ins are gone.

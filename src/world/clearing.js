@@ -29,6 +29,15 @@ const TRAIL = [
   [150, -12], [196, -60], [262, -96], [400, -138], [560, -200], [760, -250],
 ];
 
+/** Half width and height of each kind's sprite, for keeping the clearing in sight. */
+const SIZE = /** @type {Record<string, [number, number]>} */ ({
+  oak: [56, 118],
+  birch: [61, 239],
+  pine: [59, 239],
+  bush: [28, 55],
+  rock: [28, 53],
+});
+
 /** Hand placed around the meadow: [kind, x, y]. */
 const RING = /** @type {[string, number, number][]} */ ([
   ['oak', -176, -42],
@@ -49,10 +58,9 @@ const RING = /** @type {[string, number, number][]} */ ([
   ['bush', 108, 108],
   ['bush', -168, 122],
   ['bush', 222, -18],
-  ['rock', -66, 8],
-  ['rock', 38, 96],
-  ['rock', 122, 52],
-  ['rock', -20, 118],
+  // Two boulders, not four: there is one rock sprite, and four copies read as a pattern.
+  ['rock', -74, 4],
+  ['rock', 22, 116],
 ]);
 
 /**
@@ -129,6 +137,19 @@ export function buildClearing(seed) {
   /** @param {number} x @param {number} y @param {number} gap */
   const nearSomething = (x, y, gap) => objects.some((o) => Math.abs(o.x - x) < gap && Math.hypot(o.x - x, o.y - y) < gap);
 
+  // The hand-placed clearing must stay in sight: a seeded thing is never put
+  // where its sprite would stand in front of one of them.
+  const ringCount = objects.length;
+  /** @param {string} kind @param {number} x @param {number} y */
+  const hidesTheClearing = (kind, x, y) => {
+    const [half, tall] = SIZE[kind];
+    for (let i = 0; i < ringCount; i++) {
+      const o = objects[i];
+      if (o.y < y && o.y > y - tall && Math.abs(o.x - x) < half + 8) return true;
+    }
+    return false;
+  };
+
   /**
    * One candidate per grid cell, nudged off the grid. Deterministic per cell.
    * @param {string} tag
@@ -144,7 +165,7 @@ export function buildClearing(seed) {
         const y = Math.round((gy + 0.5) * cell + (roll() - 0.5) * 2 * jitter);
         if (keptClear(x, y)) continue;
         const kind = pick(roll, x, y);
-        if (kind) objects.push({ id: `${tag}:${gx}:${gy}`, kind: kinds[kind], x, y });
+        if (kind && !hidesTheClearing(kind, x, y)) objects.push({ id: `${tag}:${gx}:${gy}`, kind: kinds[kind], x, y });
       }
     }
   };

@@ -56,6 +56,8 @@ Where it stands (13 Nov 2026, session 2):
 - Left before M1 is closed: the owner judges the forest next to the video, and 60 fps on a real phone. The slowed-processor estimate is 10 to 12 ms of work per frame, about 1 ms more than the stand-ins on the same machine.
 - Candidate for a redo: the birch canopy reads loud yellow next to the oaks.
 
+Update, 14 Nov 2026, session 3: white specks removed from the oak and the pine, two rocks in the meadow instead of four, seeded trees kept from hiding the clearing, culling by exact reach. Still left before M1 is closed: the owner's look next to the video, his list of small things, and a real phone.
+
 ## M2 The wanderer
 
 Goal: walking through the clearing feels good.

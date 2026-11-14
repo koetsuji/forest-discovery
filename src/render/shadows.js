@@ -117,7 +117,7 @@ export function createShadowLayer(world, posedShadowOf) {
         buffer.height = view.h;
       }
       bufferCtx.clearRect(0, 0, view.w, view.h);
-      for (const object of world.visible(view, tuning.shadows.viewMarginPx)) {
+      for (const object of world.visible(view)) {
         const piece = posedShadowOf(object) || shadowOf(world.spriteOf(object)).base;
         if (piece) bufferCtx.drawImage(piece.canvas, object.x + piece.x - view.x, object.y + piece.y - view.y);
       }

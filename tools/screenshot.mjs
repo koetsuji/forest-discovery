@@ -245,11 +245,16 @@ async function main() {
     await page.goto(`${base}?seed=${SEED}&t=4&title=0`);
     await page.waitFor('document.documentElement.dataset.ready === "1"');
     await page.sleep(4000);
-    const cost = await page.evaluate('({ work: fd.perf.workMs, frames: fd.perf.frames })');
+    // The median frame, not an average: one slow frame on a busy machine must not decide the check.
+    const cost = await page.evaluate(`(() => {
+      const n = Math.min(fd.perf.frames, fd.perf.recent.length);
+      const sorted = Array.from(fd.perf.recent.slice(0, n)).sort((a, b) => a - b);
+      return { work: sorted[Math.floor(n / 2)], slow: sorted[Math.floor(n * 0.95)], frames: fd.perf.frames };
+    })()`);
     await page.throttleCpu(1);
     await shot(page, 'forest-phone');
-    console.log(`        phone view, 4x slower processor: ${cost.work.toFixed(1)} ms of work per frame, ${Math.round(cost.frames / 4)} frames per second in this headless browser`);
-    expect(cost.work < 12, 'a frame takes under 12 ms of work on a 4x slower processor (16.7 ms is the 60 fps limit)');
+    console.log(`        phone view, 4x slower processor: median frame ${cost.work.toFixed(1)} ms of work, 1 in 20 over ${cost.slow.toFixed(1)} ms, ${Math.round(cost.frames / 4)} frames per second in this headless browser`);
+    expect(cost.work < 10, 'the median frame takes under 10 ms of work on a 4x slower processor (16.7 ms is the 60 fps limit)');
     checkConsole(page, 'phone');
 
     console.log('Reduced motion');
