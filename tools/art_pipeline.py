@@ -96,10 +96,47 @@ def strip_ground(rgba, rows, notes):
     return rgba
 
 
+def despeck(rgba, max_size, notes):
+    """Repaint tiny pale specks with the colour around them.
+
+    Some generated sprites carry a few stray white pixels, a glint in a dark
+    fork or on a needle. In the game they read as a glitch on every copy of
+    the tree, and the split files them as pale bark, so they stay behind when
+    the leaves move. A speck is a group of pale pixels (the pale bark test)
+    no bigger than max_size. Each one takes the commonest colour of its solid
+    neighbours. Opt in per sprite: a birch is made of pale pixels.
+    """
+    solid = rgba[..., 3] >= 128
+    rgb = rgba[..., :3].astype(float)
+    hsv = rgb2hsv(rgb / 255)
+    pale = solid & (hsv[..., 1] < 0.16) & (luminance(rgb) > 95)
+    labels, count = ndimage.label(pale, structure=np.ones((3, 3)))
+    if count == 0:
+        return rgba
+    sizes = np.concatenate([[0], ndimage.sum(pale, labels, index=range(1, count + 1))])
+    specks = (labels > 0) & (sizes[labels] <= max_size)
+    if not specks.any():
+        return rgba
+    out = rgba.copy()
+    h, w = solid.shape
+    for y, x in zip(*np.where(specks)):
+        for reach in (1, 2, 3):
+            y0, y1, x0, x1 = max(0, y - reach), min(h, y + reach + 1), max(0, x - reach), min(w, x + reach + 1)
+            around = (solid & ~specks)[y0:y1, x0:x1]
+            if around.any():
+                colours, counts = np.unique(rgba[y0:y1, x0:x1][around], axis=0, return_counts=True)
+                out[y, x] = colours[np.argmax(counts)]
+                break
+    notes.append(f"{int(specks.sum())} pixels of pale specks repainted")
+    return out
+
+
 def normalize(name, rgba, notes, cfg=None):
     rgba, factor = undo_enlargement(rgba)
     if cfg and cfg.get("strip_ground"):
         rgba = strip_ground(rgba, cfg["strip_ground"], notes)
+    if cfg and cfg.get("despeck"):
+        rgba = despeck(rgba, cfg["despeck"], notes)
     if factor > 1:
         notes.append(f"was enlarged {factor}x, brought back to {rgba.shape[1]} x {rgba.shape[0]}")
     alpha = rgba[..., 3]
